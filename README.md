@@ -12,8 +12,8 @@ As this solution is based on pure bash scripts we have very few dependencies, an
 
 Besides the ability to control a keyboard and a SSH client ![alt text][lol] you of course needs to have access to a BigIP with admin rights and an advanced shell (F5 terminology for a Bash shell).
 
-The idea is to use crontab for the automation, so you need to hack this for your requirements. The crontab on a BigIP is no different than on a generic Linux server, so nothing magical here.
-
+`The idea is to use crontab for the automation, so you need to hack this for your requirements. The crontab on a BigIP is no different than on a generic Linux server, so nothing magical here.
+`
 On the BigIP you must have a virtual server listening on port 80/tcp that the domain resolves to. This VS is what we use as a reverse proxy for the challenge-response validation mechanism that Let's Encrypt is based upon. You probably have this already and you can just reuse it. As we have the logic tied to an iRule, you just have to make sure that the iRule is the first thing being executed so current logic doesn't break the challenge-response communication.
 
 Another important (and obvious ![alt text][fun]) requirement is when you have a HA pair, you must make sure that the scripts only run on the unit which is active for the traffic-group. Otherwise the changes wouldn't make much sense as the challenge-response traffic will never reach the configured virtual server/data group. I've made a wrapper script for inspiration that you can put into the crontab on all the units.
@@ -21,9 +21,9 @@ Another important (and obvious ![alt text][fun]) requirement is when you have a 
 
 ## **Limitations / Todo's**
 ---
-Before you start to fire away with requests please be aware of these restrictions that is in place currently: https://community.letsencrypt.org/t/rate-limits-for-lets-encrypt/6769
+Before you start to fire away with requests please be aware of these restrictions that is in place currently: https://letsencrypt.org/docs/rate-limits/
 
-I've been hit by them a couple of time now in my eagerness to test ![alt text][smile] They should be loosened over time but when and to what extent I do not know.
+I've been hit by them a couple of time now in my eagerness to test![alt text][smile] They should be loosened over time but when and to what extent I do not know.
 
 For now I haven't put in any cleanup of old and expired certificates, so they're just gonna pile up. So from time to time you need to go in and remove expired ones. This shouldn't be a too big deal as they are taken out of the client ssl profile automatically. So a simple sort-by-expiry and you can delete them in bunches.
 
