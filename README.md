@@ -559,14 +559,14 @@ https://wiki.lnxgeek.org/doku.php/howtos:let_s_encrypt_-_how_to_issue_certificat
 You can find the scripts on GitHub here: ~~https://github.com/lukas2511/letsencrypt.sh~~ https://github.com/lukas2511/dehydrated
 
 ---
-[f5logo]: https://4b0e0ccff07a2960f53e-707fda739cd414d8753e03d02c531a72.ssl.cf5.rackcdn.com/wp-content/uploads/2015/02/voltage-technology-partners-f5-sidebar-icon-360x360.png "F5 BigIP"
+[f5logo]: https://github.com/fanceg/letsencrypt-bigip/blob/master/images/logo_f5.png "F5 BigIP"
 
-[lelogo]: https://i1.wp.com/www.apl2bits.net/wp-content/uploads/2016/10/letsencrypt.png?resize=40%2C38 "Let's Encrypt"
+[lelogo]: https://github.com/fanceg/letsencrypt-bigip/blob/master/images/lets-encrypt.png "Let's Encrypt"
 
-[lol]: https://wiki.lnxgeek.org/lib/images/smileys/icon_lol.gif "lol"
+[lol]: https://github.com/fanceg/letsencrypt-bigip/blob/master/images/icon_lol.gif "lol"
 
-[fun]: https://wiki.lnxgeek.org/lib/images/smileys/icon_fun.gif "fun"
+[fun]: https://github.com/fanceg/letsencrypt-bigip/blob/master/images/icon_fun.gif "fun"
 
-[smile]: https://wiki.lnxgeek.org/lib/images/smileys/icon_smile.gif "smile"
+[smile]: https://github.com/fanceg/letsencrypt-bigip/blob/master/images/icon_smile.gif "smile"
 
-[razz]: https://wiki.lnxgeek.org/lib/images/smileys/icon_razz.gif "razz"
+[razz]: https://github.com/fanceg/letsencrypt-bigip/blob/master/images/icon_razz.gif "razz"
