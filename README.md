@@ -1,7 +1,8 @@
 
 
- ![alt text][f5logo] ![alt text][lelogo]
-# **Let's Encrypt on a BigIP**
+
+
+# **Let's Encrypt on a BigIP** 
 ~~With the opening of the public beta we can now all make use of trusted certificates in our applications free of charge. This is nice!~~ Let's Encrypt is no longer in beta (https://letsencrypt.org/2016/04/12/leaving-beta-new-sponsors.html) but that doesn't change much, you can still get hands of a lot of fully trusted certificates for your applications and websites, and it is still super nice!! ![alt text][lol]
 
 Let's Encrypt is a great project with a new approach to certificates and how to secure and manage them. This new approach however forces us to think a little bit differently when we work with them. Normally this was a task that took place once a year and could easily be handled by hand. This is not the case with Let's Encrypt. Each certificate only has a lifespan of 90 days and for the time being we do not have access to wildcard certificates, only SAN. So for each domain we will have to change all the certificates every three months, and that is simply not feasible if done manually.
@@ -79,15 +80,15 @@ for i in $( cat domains.txt | awk '{ print $1}' ); do
 done
 ```
 ### **domains.txt:**
-For the domains you would like to register a certificate for you insert them into the domain.txt file. You can have as many as you like (see restrictions above!). The format is important though.
+For the domains you would like to register a certificate for you insert them into the domains.txt file. You can have as many as you like (see restrictions above!). The format is important though.
 ```
 example.com www.example.com
 example.dk wiki.example.dk
 example.se upload.example.se download.example.se
 ```
-From the above example you can see that the “base” domain must be first followed by subdomains that will go in to the certificate as SAN names. Remember that all the names you put in here must resolve to the virtual server that handles the challenge-response validation mentioned previously. All names are validated. The above domain example will generate three certificates.
+From the above example you can see that the `base` domain must be first followed by subdomains that will go in to the certificate as SAN names. Remember that all the names you put in here must resolve to the virtual server that handles the challenge-response validation mentioned previously. All names are validated. The above domain example will generate three certificates.
 ### **hook&#46;sh:**
-Yet another updated version of the hook script. This one fits the “dehydrated” version of the script.
+Yet another updated version of the hook script. This one fits the `dehydrated` version of the script.
 ```bash
 #!/usr/bin/env bash
 
@@ -365,7 +366,7 @@ MAILSERVER="mail.example.com"
 MAILSERVERPORT="25"
 LOGFILE="/var/log/letsencrypt.log"
 DATE=$(date)
-SENDMAIL="/shared/scripts/send_mail"
+SENDMAIL="/shared/letsencrypt/send_mail"
 MAILFILE="/var/tmp/mail.txt"
 date >$LOGFILE 2>&1
 echo "" > $MAILFILE
@@ -382,7 +383,7 @@ EOF
   $SENDMAIL $MAILSERVER $MAILSERVERPORT $MAILFILE >/dev/null 2>&1
 }
 
-cd /shared/scripts
+cd /shared/letsencrypt
 
 
 ME=`echo $HOSTNAME|awk -F. '{print $1}'`
@@ -560,9 +561,9 @@ https://wiki.lnxgeek.org/doku.php/howtos:let_s_encrypt_-_how_to_issue_certificat
 You can find the scripts on GitHub here: ~~https://github.com/lukas2511/letsencrypt.sh~~ https://github.com/lukas2511/dehydrated
 
 ---
-[f5logo]: https://github.com/fanceg/letsencrypt-bigip/blob/master/images/logo_f5.png "F5 BigIP"
+[f5logo]: https://github.com/fanceg/letsencrypt-bigip/raw/master/images/logo_f5.png "F5 BigIP"
 
-[lelogo]: https://github.com/fanceg/letsencrypt-bigip/blob/master/images/lets-encrypt.png "Let's Encrypt"
+[lelogo]: https://github.com/fanceg/letsencrypt-bigip/raw/master/images/logo_le.png "Let's Encrypt"
 
 [lol]: https://github.com/fanceg/letsencrypt-bigip/blob/master/images/icon_lol.gif "lol"
 
