@@ -33,7 +33,7 @@ _mktemp() {
   mktemp ${@:-} "${TMPDIR:-/tmp}/dehydrated-XXXXXX"
 }
 
-# Check for script dependencies
+# Check for script dependencies 
 check_dependencies() {
   # just execute some dummy and/or version commands to see if required tools exist and are actually usable
   "${OPENSSL}" version > /dev/null 2>&1 || _exiterr "This script requires an openssl binary."

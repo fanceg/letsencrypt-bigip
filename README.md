@@ -3,7 +3,7 @@
 
 Let's Encrypt is a great project with a new approach to certificates and how to secure and manage them. This new approach however forces us to think a little bit differently when we work with them. Normally this was a task that took place once a year and could easily be handled by hand. This is not the case with Let's Encrypt. Each certificate only has a lifespan of 90 days and for the time being we do not have access to wildcard certificates, only SAN. So for each domain we will have to change all the certificates every three months, and that is simply not feasible if done manually.
 
-So here comes certificate automation. The project has built a client making automation possible when running on a generic Linux server, and that is fine. However it does make it a little more problematic if you don't have the certificates on the backend servers but on an ADC, F5 Big-IP in this case. This got me thinking, how do we fix this? Luckily I got some very talented colleagues (thank you Dindorp!) with an equal desire for Let's Encrypt, so here is one way of doing it!
+So here comes certificate automation. The project has built a client making automation possible when running on a generic Linux server, and that is fine. However it does make it a little more problematic if you don't have the certificates on the backend servers but on an ADC, F5 Big-IP in this case. This got me thinking, how do we fix this? Luckily I got some very talented colleagues (thank you Dindorp!) with an equal desire for Let's Encrypt, so here is one way of doing it! 
 
 
 ## **Requirements**
@@ -557,9 +557,6 @@ https://wiki.lnxgeek.org/doku.php/howtos:let_s_encrypt_-_how_to_issue_certificat
 You can find the scripts on GitHub here: ~~https://github.com/lukas2511/letsencrypt.sh~~ https://github.com/lukas2511/dehydrated
 
 ---
-[f5logo]: https://github.com/fanceg/letsencrypt-bigip/raw/master/images/logo_f5.png "F5 BigIP"
-
-[lelogo]: https://github.com/fanceg/letsencrypt-bigip/raw/master/images/logo_le.png "Let's Encrypt"
 
 [lol]: https://github.com/fanceg/letsencrypt-bigip/blob/master/images/icon_lol.gif "lol"
 

@@ -2,7 +2,7 @@
 #
 # sends a properly formatted file to smtp server
 # usage: send_email
-#
+# 
 # blatantly copied from Peter Vibert’s expect script:
 # http://www.petervibert.com/posts/01-11-09-expect-smtp.html
 # source: http://pfautsch.com/?p=484

@@ -1,1 +1,1 @@
-ssl-test.cambridgeassessment.org.uk ssl-test.cambridgeinternational.org
+example.com www.example.com

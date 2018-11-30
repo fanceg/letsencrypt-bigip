@@ -115,7 +115,7 @@ request_failure() {
     # - REASON
     #   The specified reason for the error.
     # - REQTYPE
-    #   The kind of request that was made (GET, POST...)
+    #   The kind of request that was made (GET, POST...) 
 }
 
 exit_hook() {
