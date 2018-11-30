@@ -1,5 +1,6 @@
 
 
+ ![alt text][f5logo] ![alt text][lelogo]
 # **Let's Encrypt on a BigIP**
 ~~With the opening of the public beta we can now all make use of trusted certificates in our applications free of charge. This is nice!~~ Let's Encrypt is no longer in beta (https://letsencrypt.org/2016/04/12/leaving-beta-new-sponsors.html) but that doesn't change much, you can still get hands of a lot of fully trusted certificates for your applications and websites, and it is still super nice!! ![alt text][lol]
 
