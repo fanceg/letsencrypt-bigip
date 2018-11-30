@@ -425,7 +425,7 @@ set hostname [exec hostname]
 set from [exec grep "From:" "$cfile"]
 set quoted [string match "?*<*@*.*>" "$from"]
 if [expr $quoted > 0 ] {
-set from [exec echo "$from" | cut -d< -f2 | tr -d '>‘]
+set from [exec echo "$from" | cut -d< -f2 | tr -d '>']
 } else {
 set from [exec echo "$from" | cut -d: -f2 | tr -d \[:space:\]]
 }
@@ -434,7 +434,7 @@ set from [exec echo "$from" | cut -d: -f2 | tr -d \[:space:\]]
 set to [exec grep "To:" "$cfile"]
 set quoted [string match "?*<*@*.*>" "$to"]
 if [expr $quoted > 0 ] {
-set to [exec echo "$to" | cut -d< -f2 | tr -d '>‘]
+set to [exec echo "$to" | cut -d< -f2 | tr -d '>']
 } else {
 set to [exec echo "$to" | cut -d: -f2 | tr -d \[:space:\]]
 }
