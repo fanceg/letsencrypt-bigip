@@ -6,7 +6,7 @@ MAILSERVER="testsmtp0.ucles.internal"
 MAILSERVERPORT="25"
 LOGFILE="/var/log/letsencrypt.log"
 DATE=$(date)
-SENDMAIL="/shared/scripts/send_mail"
+SENDMAIL="/shared/letsencrypt/send_mail"
 MAILFILE="/var/tmp/mail.txt"
 date >$LOGFILE 2>&1
 echo "" > $MAILFILE
