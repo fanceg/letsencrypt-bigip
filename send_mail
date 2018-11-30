@@ -1,0 +1,106 @@
+#!/usr/bin/expect
+#
+# sends a properly formatted file to smtp server
+# usage: send_email
+#
+# blatantly copied from Peter Vibert’s expect script:
+# http://www.petervibert.com/posts/01-11-09-expect-smtp.html
+# source: http://pfautsch.com/?p=484
+#
+if {$argc<3} {
+ send_user "sends mime formatted message file to smtp server using telnet\n"
+ send_user "usage: send_email mailserver port message_file\n"
+ exit
+}
+set mailserver [lrange $argv 0 0]
+set portno [lrange $argv 1 1]
+set cfile [lrange $argv 2 2]
+send "$cfile\n"
+set fp [open "$cfile" r]
+set content [read $fp]
+set hostname [exec hostname]
+
+# extract the from address from message file
+# must be in one of two forms:
+# From: "Recipient Name"
+# or
+# From: recipient@foo.com
+
+set from [exec grep "From:" "$cfile"]
+set quoted [string match "?*<*@*.*>" "$from"]
+if [expr $quoted > 0 ] {
+set from [exec echo "$from" | cut -d< -f2 | tr -d '>‘]
+} else {
+set from [exec echo "$from" | cut -d: -f2 | tr -d \[:space:\]]
+}
+
+# extract the to address – same as from (see above)
+set to [exec grep "To:" "$cfile"]
+set quoted [string match "?*<*@*.*>" "$to"]
+if [expr $quoted > 0 ] {
+set to [exec echo "$to" | cut -d< -f2 | tr -d '>‘]
+} else {
+set to [exec echo "$to" | cut -d: -f2 | tr -d \[:space:\]]
+}
+
+spawn telnet $mailserver $portno
+expect "failed" {
+send_user "$mailserver: connect failed\n"
+exit
+} "2?? *" {
+} "4?? *" {
+exit
+} "refused" {
+send_user "$mailserver: connect refused\n"
+exit
+} "closed" {
+send_user "$mailserver: connect closed\n"
+exit
+} timeout {
+send_user "$mailserver: connect to port $portno timeout\n"
+exit
+}
+send "HELO $hostname\r"
+expect "2?? *" {
+} "5?? *" {
+exit
+} "4?? *" {
+exit
+}
+send "MAIL FROM: <$from>\r"
+expect "2?? *" {
+} "5?? *" {
+exit
+} "4?? *" {
+exit
+}
+send "RCPT TO: <$to>\r"
+expect "2?? *" {
+} "5?? *" {
+exit
+} "4?? *" {
+exit
+}
+send "DATA\r"
+expect "3?? *" {
+} "5?? *" {
+exit
+} "4?? *" {
+exit
+}
+log_user 0
+send "$content"
+set timeout 1
+expect "$content"
+close $fp
+send ".\r"
+expect ".\r"
+expect "2?? *" {
+} "5?? *" {
+exit
+} "4?? *" {
+exit
+}
+send_user "$expect_out(buffer)"
+send "QUIT\r"
+exit
