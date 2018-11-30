@@ -1,8 +1,8 @@
 #!/bin/bash
 
-MAILRCPT="fance.g@cambridgeassessment.org.uk"
-MAILFROM="ndc-lbe01-dev@ucles.internal"
-MAILSERVER="testsmtp0.ucles.internal"
+MAILRCPT="email@example.com"
+MAILFROM="server@example.com"
+MAILSERVER="mailserver.domain.com"
 MAILSERVERPORT="25"
 LOGFILE="/var/log/letsencrypt.log"
 DATE=$(date)
