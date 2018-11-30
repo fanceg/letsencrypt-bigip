@@ -1,8 +1,8 @@
 #!/bin/bash
 
-MAILRCPT="email@example.com"
-MAILFROM="server@example.com"
-MAILSERVER="mailserver.domain.com"
+MAILRCPT=""
+MAILFROM=""
+MAILSERVER=""
 MAILSERVERPORT="25"
 LOGFILE="/var/log/letsencrypt.log"
 DATE=$(date)
