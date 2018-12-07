@@ -3,17 +3,15 @@
 
 Let's Encrypt is a great project with a new approach to certificates and how to secure and manage them. This new approach however forces us to think a little bit differently when we work with them. Normally this was a task that took place once a year and could easily be handled by hand. This is not the case with Let's Encrypt. Each certificate only has a lifespan of 90 days and for the time being we do not have access to wildcard certificates, only SAN. So for each domain we will have to change all the certificates every three months, and that is simply not feasible if done manually.
 
-So here comes certificate automation. The project has built a client making automation possible when running on a generic Linux server, and that is fine. However it does make it a little more problematic if you don't have the certificates on the backend servers but on an ADC, F5 Big-IP in this case. This got me thinking, how do we fix this? Luckily I got some very talented colleagues (thank you Dindorp!) with an equal desire for Let's Encrypt, so here is one way of doing it! 
+So here comes certificate automation. The project has built a client making automation possible when running on a generic Linux server, and that is fine. However it does make it a little more problematic if you don't have the certificates on the backend servers but on an ADC, F5 Big-IP in this case. This got me thinking, how do we fix this? here is one way of doing it! 
 
 
 ## **Requirements**
 ---
-As this solution is based on pure bash scripts we have very few dependencies, and that is why I've chosen to go this way. Also the main script handling the requesting runs without any changes on a BigIP. The big part of the scripting has already been done by [Lukas Schauer](https://github.com/lukas2511) - Great job Lukas!!!
+As this solution is based on pure bash scripts we have very few dependencies, and that is why I've chosen to go this way. Also the main script handling the requesting runs without any changes on a BigIP. The big part of the scripting has already been done by [Lukas Schauer](https://github.com/lukas2511)
 
 Besides the ability to control a keyboard and a SSH client ![alt text][lol] you of course needs to have access to a BigIP with admin rights and an advanced shell (F5 terminology for a Bash shell).
 
-`The idea is to use crontab for the automation, so you need to hack this for your requirements. The crontab on a BigIP is no different than on a generic Linux server, so nothing magical here.
-`
 On the BigIP you must have a virtual server listening on port 80/tcp that the domain resolves to. This VS is what we use as a reverse proxy for the challenge-response validation mechanism that Let's Encrypt is based upon. You probably have this already and you can just reuse it. As we have the logic tied to an iRule, you just have to make sure that the iRule is the first thing being executed so current logic doesn't break the challenge-response communication.
 
 Another important (and obvious ![alt text][fun]) requirement is when you have a HA pair, you must make sure that the scripts only run on the unit which is active for the traffic-group. Otherwise the changes wouldn't make much sense as the challenge-response traffic will never reach the configured virtual server/data group. I've made a wrapper script for inspiration that you can put into the crontab on all the units.
