@@ -9,6 +9,8 @@ tmsh modify sys icall script letsencrypt definition { exec /shared/letsencrypt/w
 tmsh create sys icall handler periodic letsencrypt first-occurrence 2017-07-21:00:00:00 interval 604800 script letsencrypt
 tmsh save sys config
 
+cat /config/filestore/files_d/Common_d/lwtunneltbl_d/*domains.txt* > /shared/letsencrypt/domains.txt
+
 for i in $( cat domains.txt | awk '{ print $1}' ); do
 	  tmsh create ltm profile client-ssl auto_$i
 	    echo "Created  auto_$i client-ssl profile"
