@@ -24,7 +24,7 @@ EOF
 }
 
 cd /shared/letsencrypt 
-
+cat /config/filestore/files_d/Common_d/lwtunneltbl_d/*domains.txt* > /shared/letsencrypt/domains.txt
 
 ME=`echo $HOSTNAME|awk -F. '{print $1}'`
 ACTIVE=$(tmsh show cm failover-status | grep ACTIVE | wc -l)
