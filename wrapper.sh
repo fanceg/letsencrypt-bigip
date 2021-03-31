@@ -23,6 +23,11 @@ EOF
   $SENDMAIL $MAILSERVER $MAILSERVERPORT $MAILFILE >/dev/null 2>&1
 }
 
+
+cd /var/www/
+mkdir -p dehydrated
+
+
 cd /shared/letsencrypt 
 cat /config/filestore/files_d/Common_d/lwtunneltbl_d/*domains.txt* > /shared/letsencrypt/domains.txt
 
