@@ -63,8 +63,9 @@ function deploy_cert {
     cert=${name}.crt
     key=${name}.key
     tmsh install sys crypto key ${name} from-local-file ${KEYFILE}
-    tmsh install sys crypt cert ${name} from-local-file ${FULLCHAINFILE}
-    tmsh modify ltm profile client-ssl ${profile} cert-key-chain replace-all-with { default { key $key cert $cert } }
+    tmsh install sys crypto cert ${name} from-local-file ${FULLCHAINFILE}
+    #tmsh modify ltm profile client-ssl ${profile} cert-key-chain replace-all-with { default { key $key cert $cert } }
+    tmsh modify ltm profile client-ssl ${profile} cert-key-chain replace-all-with { default { key $name cert $name } }
 }
 
 function unchanged_cert {
