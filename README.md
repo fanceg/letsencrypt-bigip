@@ -348,156 +348,87 @@ You run it like this: `dehydrated -c`
 
 ## **Wrapper**
 ---
-As dehydrated only should run on the active unit I've made a wrapper which is making sure this is handled. Also I like to get an email whenever the script has run so I know the status of my certificates and if any errors had occurred. Regarding the mail notification, v.13 of TMOS is horrible when it comes to the local mail function. It is based on ssmtp which is okay but it also catches a lot of other cron jobs and pollutes your inbox with lots of crap mails from jobs which shouldn't be sending emails. That is why I've stopped using the local MTA for notifications and instead I found an expect script (to my pleasure I realised that expect is installed as part of TMOS :-)) which does it for me. In the wrapper I've called it `send_mail`.
+As dehydrated only should run on the active unit I've made a wrapper which is making sure this is handled. Also I like to get an email whenever the script has run so I know the status of my certificates and if any errors had occurred. Regarding the mail notification, v.13 of TMOS is horrible when it comes to the local mail function. It is based on ssmtp which is okay but it also catches a lot of other cron jobs and pollutes your inbox with lots of crap mails from jobs which shouldn't be sending emails. ~~That is why I've stopped using the local MTA for notifications and instead I found an expect script (to my pleasure I realised that expect is installed as part of TMOS :-)) which does it for me. In the wrapper I've called it `send_mail`.~~ The send_mail script has been replaced by a mailer written in pure bash. just configure the variables CONFIG['mailfrom'], CONFIG['mailto'] and CONFIG['mailrelay'] to sensible values. No mail will be sent if those variables are empty.
+
 
 ### **wrapper&#46;sh:**
 ```bash
 #!/bin/bash
 
-MAILRCPT="example@example.com"
-MAILFROM="f5@example"
-MAILSERVER="mail.example.com"
-MAILSERVERPORT="25"
-LOGFILE="/var/log/letsencrypt.log"
-DATE=$(date)
-SENDMAIL="/shared/letsencrypt/send_mail"
-MAILFILE="/var/tmp/mail.txt"
-date >$LOGFILE 2>&1
-echo "" > $MAILFILE
+# Wrapper file for letsencrypt-bigip
+#
+# Originally written by Gavin Fance
+# Heavily modified by Frederic Pasteleurs <frederic@askarel.be>
+#
+# This script is licensed under The MIT License (see LICENSE for more information).
 
-send_status_mail () {
-  local message=$1
-  cat <<-EOF >$MAILFILE
-From: $MAILFROM
-To: $MAILRCPT
-Date: $DATE
-Subject: $message
-EOF
-  cat $LOGFILE >> $MAILFILE
-  $SENDMAIL $MAILSERVER $MAILSERVERPORT $MAILFILE >/dev/null 2>&1
+declare -A CONFIG
+
+CONFIG['mailfrom']='noreply@example.invalid'
+CONFIG['mailto']='johndoe@example.invalid'
+CONFIG['mailrelay']='smtp.example.invalid'
+CONFIG['logfile']="/var/log/letsencrypt.log"
+
+#######################################################################
+
+# Send email using parameters in $CONFIG array
+# Body data is in stdin, subject is on first line of STDIN
+do_send_mail() {
+    test -n "${CONFIG['mailfrom']}" || echo "${FUNCNAME}: Variable CONFIG['mailfrom'] not set: no mail will be sent"
+    test -n "${CONFIG['mailto']}" || echo "${FUNCNAME}: Variable CONFIG['mailto'] not set: no mail will be sent"
+    test -n "${CONFIG['mailrelay']}" || echo "${FUNCNAME}: Variable CONFIG['mailrelay'] not set: no mail will be sent"
+    test -z "${CONFIG['mailfrom']}" -o -z "${CONFIG['mailto']}" -o -z "${CONFIG['mailrelay']}" && return
+    # Open TCP socket to SMTP server
+    exec 3<>"/dev/tcp/${CONFIG['mailrelay']}/25"
+    # SMTP dialog with SMTP server
+    read -u 3
+    test ${REPLY%%[[:space:]]*} -eq 220 || { echo "${FUNCNAME}: Got error from serveron connect. Message: '$REPLY'"; return; }
+    printf 'HELO %s\r\n' "${HOSTNAME}" >&3
+    read -u 3
+    test ${REPLY%%[[:space:]]*} -eq 250 || { echo "${FUNCNAME}: Got error from server after HELO. Message: '$REPLY'"; return; }
+    printf 'MAIL FROM:%s\r\n' "${CONFIG['mailfrom']}" >&3
+    read -u 3
+    test ${REPLY%%[[:space:]]*} -eq 250 || { echo "${FUNCNAME}: Got error from server after MAIL FROM. Message: '$REPLY'"; return; }
+    printf 'RCPT TO:%s\r\n' "${CONFIG['mailto']}" >&3
+    read -u 3
+    test ${REPLY%%[[:space:]]*} -eq 250 || { echo "${FUNCNAME}: Got error from server after RCPT TO. Message: '$REPLY'"; return; }
+    printf 'DATA\r\n' >&3
+    read -u 3
+    test ${REPLY%%[[:space:]]*} -eq 354 || { echo "${FUNCNAME}: Got error from server after DATA. Message: '$REPLY'"; return; }
+    printf 'From: %s\r\n' "${CONFIG['mailfrom']}" >&3
+    printf 'To: %s\r\n' "${CONFIG['mailto']}" >&3
+    printf 'Date: %s\r\n' "$(date)" >&3
+    # Use first line of STDIN as subject line
+    read
+    printf 'Subject: %s\r\n\r\n' "$REPLY" >&3
+    # Add \r\n at the end of each line
+    while read line; do printf '%s\r\n' "$line" >&3; done
+    # Footer
+    printf -- '-- \r\nMail sent by letsencrypt-bigip wrapper, running on %s\r\n' "$HOSTNAME" >&3
+    printf '\r\n.\r\n' >&3
+    read -u 3
+    test ${REPLY%%[[:space:]]*} -eq 250 || { echo "${FUNCNAME}: Got error from server after end of data. Message: '$REPLY'"; return; }
+    printf 'QUIT\r\n' >&3
 }
+
 
 cd /shared/letsencrypt
+# What is this ? This folder does not exists on version 15
+#cat /config/filestore/files_d/Common_d/lwtunneltbl_d/*domains.txt* > /shared/letsencrypt/domains.txt
 
-
-ME=`echo $HOSTNAME|awk -F. '{print $1}'`
 ACTIVE=$(tmsh show cm failover-status | grep ACTIVE | wc -l)
 
+{ printf 'Lets Encrypt Report %s\n\n' "$(echo $HOSTNAME|awk -F. '{print $1}')"
+
 if [[ "${ACTIVE}" = "1" ]]; then
-    echo "Unit is active - proceeding..."
-    exec >/var/log/letsencrypt.log 2>&1
-    ./dehydrated -c
-    send_status_mail "Lets Encrypt Report $ME"
+        printf '%s %s: Unit is active - proceeding...\n' "$(date)" "$HOSTNAME"
+        ./dehydrated -c
+        #send_status_mail "Lets Encrypt Report $ME"
+    else
+        printf '%s %s: Unit not active - skipping...\n' "$(date)" "$HOSTNAME"
 fi
-```
-### **send_mail:**
-```bash
-#!/usr/bin/expect
-#
-# sends a properly formatted file to smtp server
-# usage: send_email
-#
-# blatantly copied from Peter Vibert’s expect script:
-# http://www.petervibert.com/posts/01-11-09-expect-smtp.html
-# source: http://pfautsch.com/?p=484
-#
-if {$argc<3} {
- send_user "sends mime formatted message file to smtp server using telnet\n"
- send_user "usage: send_email mailserver port message_file\n"
- exit
-}
-set mailserver [lrange $argv 0 0]
-set portno [lrange $argv 1 1]
-set cfile [lrange $argv 2 2]
-send "$cfile\n"
-set fp [open "$cfile" r]
-set content [read $fp]
-set hostname [exec hostname]
 
-# extract the from address from message file
-# must be in one of two forms:
-# From: "Recipient Name"
-# or
-# From: recipient@foo.com
-
-set from [exec grep "From:" "$cfile"]
-set quoted [string match "?*<*@*.*>" "$from"]
-if [expr $quoted > 0 ] {
-set from [exec echo "$from" | cut -d< -f2 | tr -d '>']
-} else {
-set from [exec echo "$from" | cut -d: -f2 | tr -d \[:space:\]]
-}
-
-# extract the to address – same as from (see above)
-set to [exec grep "To:" "$cfile"]
-set quoted [string match "?*<*@*.*>" "$to"]
-if [expr $quoted > 0 ] {
-set to [exec echo "$to" | cut -d< -f2 | tr -d '>']
-} else {
-set to [exec echo "$to" | cut -d: -f2 | tr -d \[:space:\]]
-}
-
-spawn telnet $mailserver $portno
-expect "failed" {
-send_user "$mailserver: connect failed\n"
-exit
-} "2?? *" {
-} "4?? *" {
-exit
-} "refused" {
-send_user "$mailserver: connect refused\n"
-exit
-} "closed" {
-send_user "$mailserver: connect closed\n"
-exit
-} timeout {
-send_user "$mailserver: connect to port $portno timeout\n"
-exit
-}
-send "HELO $hostname\r"
-expect "2?? *" {
-} "5?? *" {
-exit
-} "4?? *" {
-exit
-}
-send "MAIL FROM: <$from>\r"
-expect "2?? *" {
-} "5?? *" {
-exit
-} "4?? *" {
-exit
-}
-send "RCPT TO: <$to>\r"
-expect "2?? *" {
-} "5?? *" {
-exit
-} "4?? *" {
-exit
-}
-send "DATA\r"
-expect "3?? *" {
-} "5?? *" {
-exit
-} "4?? *" {
-exit
-}
-log_user 0
-send "$content"
-set timeout 1
-expect "$content"
-close $fp
-send ".\r"
-expect ".\r"
-expect "2?? *" {
-} "5?? *" {
-exit
-} "4?? *" {
-exit
-}
-send_user "$expect_out(buffer)"
-send "QUIT\r"
-exit
+} | do_send_mail
 ```
 ## **Install an iScript**
 ---
