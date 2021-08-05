@@ -7,14 +7,23 @@
 #
 # This script is licensed under The MIT License (see LICENSE for more information).
 
+# The domain list will be loaded from a datagroup file into an associative array
+declare -A DOMAIN
 declare -A CONFIG
+# Tempfile containing the list of domains
+DOMAINTMPFILE="$(mktemp /tmp/domains.txt.XXXXXXXXXXXX)"
 
+#######################################################################
 CONFIG['mailfrom']='noreply@example.invalid'
 CONFIG['mailto']='johndoe@example.invalid'
 CONFIG['mailrelay']='smtp.example.invalid'
-CONFIG['logfile']="/var/log/letsencrypt.log"
-
 #######################################################################
+
+# Deletes the temporary domains.txt when the script ends
+cleanup() {
+    rm -f "$DOMAINTMPFILE"
+}
+
 
 # Send email using parameters in $CONFIG array
 # Body data is in stdin, subject is on first line of STDIN
@@ -56,6 +65,18 @@ do_send_mail() {
     printf 'QUIT\r\n' >&3
 }
 
+# Register a function that will clean after us on exit
+#trap cleanup EXIT
+
+# Load datagroup file into associative array DOMAIN
+eval "$(cat /config/filestore/files_d/Common_d/data_group_d/*letsencrypt-domains.txt* | sed -e '/^$/d; s/^/DOMAIN\[/g; s/\ *\:\=\ */\]\=/g; s/\,\ *$//g')"
+
+# Craft temporary domain.txt file and create client SSL profiles if needed
+for i in "${!DOMAIN[@]}"; do
+    tmsh create ltm profile client-ssl auto_$i
+    printf '%s %s\n' "$i" "${DOMAIN["$i"]}" >> "$DOMAINTMPFILE"
+done
+
 
 cd /shared/letsencrypt 
 # What is this ? This folder does not exists on version 15
@@ -63,11 +84,13 @@ cd /shared/letsencrypt
 
 ACTIVE=$(tmsh show cm failover-status | grep ACTIVE | wc -l)
 
+exit 0
+
 { printf 'Lets Encrypt Report %s\n\n' "$(echo $HOSTNAME|awk -F. '{print $1}')"
 
 if [[ "${ACTIVE}" = "1" ]]; then
 	printf '%s %s: Unit is active - proceeding...\n' "$(date)" "$HOSTNAME"
-	./dehydrated -c
+	./dehydrated --domains-txt "$DOMAINTMPFILE" -c
 	#send_status_mail "Lets Encrypt Report $ME"
     else
 	printf '%s %s: Unit not active - skipping...\n' "$(date)" "$HOSTNAME"
